@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/grid_layout_padding">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/grid_item_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        card_view:cardCornerRadius="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+
+            <ImageView
+                android:id="@+id/grid_item_image"
+                android:layout_width="match_parent"
+                android:layout_height="240dp"
+                android:scaleType="centerCrop"
+                />
+
+            <TextView
+                android:id="@+id/grid_item_title"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/standard_textview_height"
+                android:text="Movie Title"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:paddingLeft="@dimen/grid_textview_padding"
+                android:paddingRight="@dimen/grid_textview_padding"
+                />
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+</FrameLayout>
