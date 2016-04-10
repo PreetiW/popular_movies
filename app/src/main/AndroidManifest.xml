@@ -13,7 +13,6 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".main.MainActivity"
-            android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,13 +20,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".main.MovieDetailActivity"
-            android:label="@string/title_activity_movie_detail"
-            android:theme="@style/AppTheme"
-            android:configChanges="orientation|screenSize"
-            android:parentActivityName=".main.MainActivity">
-        </activity>
+
+        <provider
+            android:exported="false"
+            android:authorities="com.preetiwadhwani.popularmovies"
+            android:name="com.preetiwadhwani.popularmovies.database.FavoriteProvider"/>
+
+
     </application>
 
 </manifest>

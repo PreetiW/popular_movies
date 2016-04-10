@@ -3,12 +3,38 @@ package com.preetiwadhwani.popularmovies.util;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.preetiwadhwani.popularmovies.database.MoviesContract;
+
+import ckm.simple.sql_provider.annotation.SimpleSQLColumn;
+import ckm.simple.sql_provider.annotation.SimpleSQLTable;
+
 /**
  * Created by Preeti on 14-02-2016.
  */
+
+@SimpleSQLTable(table = MoviesContract.FavoritesEntry.TABLE_NAME, provider = "FavoriteProvider")
 public class MovieItem implements Parcelable {
 
-    String movieName, movieImageUrl, movieId, backdropMovieImageUrl, movieReleaseDate, movieSummary, movieRating;
+    @SimpleSQLColumn(MoviesContract.FavoritesEntry.COLUMN_MOVIETITLE)
+    String movieName;
+
+    @SimpleSQLColumn(MoviesContract.FavoritesEntry.COLUMN_POSTERURL)
+    String movieImageUrl;
+
+    @SimpleSQLColumn(MoviesContract.FavoritesEntry.COLUMN_MOVIEID)
+    String movieId;
+
+    @SimpleSQLColumn(MoviesContract.FavoritesEntry.COLUMN_BACKDROP)
+    String backdropMovieImageUrl;
+
+    @SimpleSQLColumn(MoviesContract.FavoritesEntry.COLUMN_REALEASEDATE)
+    String movieReleaseDate;
+
+    @SimpleSQLColumn(MoviesContract.FavoritesEntry.COLUMN_SYNOPSIS)
+    String movieSummary;
+
+    @SimpleSQLColumn(MoviesContract.FavoritesEntry.COLUMN_RATING)
+    String movieRating;
 
     public String getBackdropMovieImageUrl()
     {

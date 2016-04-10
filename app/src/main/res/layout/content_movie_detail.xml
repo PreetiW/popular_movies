@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/activity_movie_detail"
-    tools:context="com.preetiwadhwani.popularmovies.main.MovieDetailActivity">
+    tools:showIn="@layout/fragment_movie_detail"
+    tools:context=".fragment.MovieDetailFragment">
 
     <TextView
         android:id="@+id/movie_release_date"
@@ -20,9 +20,9 @@
         android:id="@+id/movie_rating"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_below="@+id/movie_release_date"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="16dp"
         style="?android:attr/ratingBarStyleSmall"
         android:stepSize="0.5"
         android:numStars="5"/>
@@ -30,7 +30,7 @@
 
     <uk.co.deanwild.flowtextview.FlowTextView
         android:id="@+id/movie_summary"
-        android:layout_below="@+id/movie_release_date"
+        android:layout_below="@+id/movie_rating"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp">
@@ -45,5 +45,32 @@
             android:layout_alignParentRight="true" />
 
     </uk.co.deanwild.flowtextview.FlowTextView>
+
+
+
+
+    <android.support.v7.widget.RecyclerView
+            android:layout_marginTop="48dp"
+            android:id="@+id/trailers_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:layout_below="@+id/movie_summary"/>
+
+    <View
+            android:id="@+id/list_seperator"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="48dp"
+            android:layout_marginTop="48dp"
+            android:layout_below="@+id/trailers_container"
+            android:background="#cccccc" />
+
+    <android.support.v7.widget.RecyclerView
+            android:id="@+id/reviews_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:layout_below="@+id/list_seperator"/>
 
 </RelativeLayout>
