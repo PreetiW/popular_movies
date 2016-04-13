@@ -1,6 +1,8 @@
 package com.preetiwadhwani.popularmovies.main;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
@@ -19,6 +21,8 @@ public class MainActivity extends AppCompatActivity
     public static String IS_TABLET_KEY = "IS_TABLET_KEY";
 
     boolean isTablet;
+    private final String TAG = getClass().getSimpleName();
+    Fragment movieListFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -35,11 +39,16 @@ public class MainActivity extends AppCompatActivity
 
         moviesListFragment = new MoviesListFragment();
 
-        if(savedInstanceState == null)
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(TAG);
+        if(fragment == null)
         {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.parent_fragment_container, moviesListFragment).commit();
+            movieListFragment = new MoviesListFragment();
+            fragmentManager.beginTransaction().replace(R.id.parent_fragment_container, movieListFragment, TAG).commit();
+        }
+        else
+        {
+            movieListFragment = (MoviesListFragment) fragment;
         }
 
 

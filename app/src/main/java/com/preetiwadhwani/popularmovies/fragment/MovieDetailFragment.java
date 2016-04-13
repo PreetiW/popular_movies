@@ -64,13 +64,17 @@ public class MovieDetailFragment extends Fragment implements TrailersAsyncListen
 
     TrailersRecyclerAdapter trailersRecyclerAdapter;
     ReviewsRecyclerAdapter reviewsRecyclerAdapter;
-    ArrayList<TrailerItem> trailersData = new ArrayList<>();
-    ArrayList<ReviewItem> reviewsData = new ArrayList<>();
+    ArrayList<TrailerItem> trailersData;
+    ArrayList<ReviewItem> reviewsData;
 
-    MovieItem movieItem;
+    MovieItem selectedMovieItem;
     AppCompatActivity activity;
     Cursor cursor;
     boolean isFavorite;
+
+    static final String TRAILERS_DATA_KEY = "trailersData";
+    static final String REVIEWS_DATA_KEY = "reviewsData";
+    static final String SELECTED_MOVIE_DATA_KEY = "selectedMovieData";
 
     @Nullable
     @Override
@@ -80,37 +84,54 @@ public class MovieDetailFragment extends Fragment implements TrailersAsyncListen
         setRetainInstance(true);
         ButterKnife.bind(this,view);
         activity = (AppCompatActivity) getActivity();
-        if(getArguments() != null)
-        {
-            movieItem = getArguments().getParcelable("selectedMovieItem");
-        }
-        setUI();
+
+        setUI(savedInstanceState);
         return view;
 
     }
 
-    private void setUI()
+    private void setUI(Bundle savedInstanceState)
     {
+        if(savedInstanceState != null)
+        {
+            selectedMovieItem = savedInstanceState.getParcelable(SELECTED_MOVIE_DATA_KEY);
+            reviewsData = savedInstanceState.getParcelableArrayList(REVIEWS_DATA_KEY);
+            trailersData = savedInstanceState.getParcelableArrayList(TRAILERS_DATA_KEY);
+        }
+        else
+        {
 
+            reviewsData = new ArrayList<>();
+            trailersData = new ArrayList<>();
+            selectedMovieItem = getArguments().getParcelable("selectedMovieItem");
+
+            FetchTrailersTask fetchTrailersTask = new FetchTrailersTask(getActivity());
+            fetchTrailersTask.setTrailersAsyncListener(this);
+            fetchTrailersTask.execute(selectedMovieItem.getMovieId());
+
+            FetchReviewsTask fetchReviewsTask = new FetchReviewsTask(getActivity());
+            fetchReviewsTask.setReviewsAsyncListener(this);
+            fetchReviewsTask.execute(selectedMovieItem.getMovieId());
+        }
         if(!getArguments().getBoolean("isTablet"))
         {
             activity.setSupportActionBar(detailToolbar);
             activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        activity.getSupportActionBar().setTitle(movieItem.getMovieName());
-        movieReleaseDate.setText(movieItem.getMovieReleaseDate());
-        movieSummary.setText(movieItem.getMovieSummary());
+        activity.getSupportActionBar().setTitle(selectedMovieItem.getMovieName());
+        movieReleaseDate.setText(selectedMovieItem.getMovieReleaseDate());
+        movieSummary.setText(selectedMovieItem.getMovieSummary());
         movieSummary.setTextSize(48);
-        movieRating.setProgress((int)Float.parseFloat(movieItem.getMovieRating()));
+        movieRating.setProgress((int)Float.parseFloat(selectedMovieItem.getMovieRating()));
 
 
         Picasso.with(activity)
-                .load(movieItem.getMovieImageUrl())
+                .load(selectedMovieItem.getMovieImageUrl())
                 .placeholder(R.drawable.grid_item_image_placeholder)
                 .into(moviePoster);
 
         Picasso.with(activity)
-                .load(movieItem.getBackdropMovieImageUrl())
+                .load(selectedMovieItem.getBackdropMovieImageUrl())
                 .into(backdropMovieImage);
 
         // Setup trailers
@@ -126,21 +147,12 @@ public class MovieDetailFragment extends Fragment implements TrailersAsyncListen
         reviewsContainer.setAdapter(reviewsRecyclerAdapter);
 
 
-        FetchTrailersTask fetchTrailersTask = new FetchTrailersTask(getActivity());
-        fetchTrailersTask.setTrailersAsyncListener(this);
-        fetchTrailersTask.execute(movieItem.getMovieId());
-
-        FetchReviewsTask fetchReviewsTask = new FetchReviewsTask(getActivity());
-        fetchReviewsTask.setReviewsAsyncListener(this);
-        fetchReviewsTask.execute(movieItem.getMovieId());
-
-
         try
         {
 
 
             Cursor cursor = getActivity().getContentResolver().query(FavoritemoviesTable.CONTENT_URI,
-                    null, MoviesContract.FavoritesEntry.COLUMN_MOVIEID + " = " + movieItem.getMovieId(), null, null);
+                    null, MoviesContract.FavoritesEntry.COLUMN_MOVIEID + " = " + selectedMovieItem.getMovieId(), null, null);
 
             if (cursor.getCount() !=0)
             {
@@ -167,6 +179,15 @@ public class MovieDetailFragment extends Fragment implements TrailersAsyncListen
 
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        outState.putParcelable(SELECTED_MOVIE_DATA_KEY, selectedMovieItem);
+        outState.putParcelableArrayList(TRAILERS_DATA_KEY, trailersData);
+        outState.putParcelableArrayList(REVIEWS_DATA_KEY, reviewsData);
+        super.onSaveInstanceState(outState);
+    }
+
     @OnClick(R.id.favorite_fab)
     void setFavoriteMovie()
     {
@@ -191,7 +212,7 @@ public class MovieDetailFragment extends Fragment implements TrailersAsyncListen
 
         // Defines selection criteria for the rows you want to delete
         String mSelectionClause =  MoviesContract.FavoritesEntry.COLUMN_MOVIEID + " LIKE ?";
-        String[] mSelectionArgs = {movieItem.getMovieId()};
+        String[] mSelectionArgs = {selectedMovieItem.getMovieId()};
 
         // Defines a variable to contain the number of rows deleted
         int mRowsDeleted = 0;
@@ -213,13 +234,13 @@ public class MovieDetailFragment extends Fragment implements TrailersAsyncListen
 
 
         ContentValues mNewValues = new ContentValues();
-        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_MOVIEID, movieItem.getMovieId());
-        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_MOVIETITLE, movieItem.getMovieName());
-        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_POSTERURL, movieItem.getMovieImageUrl());
-        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_SYNOPSIS, movieItem.getMovieSummary());
-        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_RATING, movieItem.getMovieRating());
-        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_REALEASEDATE, movieItem.getMovieReleaseDate());
-        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_BACKDROP, movieItem.getBackdropMovieImageUrl());
+        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_MOVIEID, selectedMovieItem.getMovieId());
+        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_MOVIETITLE, selectedMovieItem.getMovieName());
+        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_POSTERURL, selectedMovieItem.getMovieImageUrl());
+        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_SYNOPSIS, selectedMovieItem.getMovieSummary());
+        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_RATING, selectedMovieItem.getMovieRating());
+        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_REALEASEDATE, selectedMovieItem.getMovieReleaseDate());
+        mNewValues.put(MoviesContract.FavoritesEntry.COLUMN_BACKDROP, selectedMovieItem.getBackdropMovieImageUrl());
 
         newUri = activity.getContentResolver().insert(FavoritemoviesTable.CONTENT_URI, mNewValues);
 

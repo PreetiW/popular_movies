@@ -25,7 +25,6 @@ import com.preetiwadhwani.popularmovies.util.FavoritemoviesTable;
 import com.preetiwadhwani.popularmovies.util.FetchMovieTask;
 import com.preetiwadhwani.popularmovies.util.GridRecylerAdapter;
 import com.preetiwadhwani.popularmovies.util.MovieItem;
-import com.preetiwadhwani.popularmovies.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +54,10 @@ public class MoviesListFragment extends Fragment implements
     CoordinatorLayout snackbarPosition;
 
     GridRecylerAdapter moviesGridAdapter;
-    ArrayList<MovieItem> moviesData = new ArrayList<>();
+    ArrayList<MovieItem> moviesData;
     String sortOrder = "popularity.desc";
     Snackbar snackbar;
+    static final String MOVIE_DATA_KEY = "movieData";
 
 
     @Override
@@ -71,6 +71,16 @@ public class MoviesListFragment extends Fragment implements
         activity.setSupportActionBar(appToolbar);
         activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        if(savedInstanceState != null)
+        {
+            moviesData = savedInstanceState.getParcelableArrayList(MOVIE_DATA_KEY);
+        }
+        else
+        {
+            moviesData = new ArrayList<>();
+            fetchMovieData(sortOrder, activity);
+        }
+
         sortMovieSpinner.setOnItemSelectedListener(this);
         ArrayAdapter<CharSequence> sortAdapter = ArrayAdapter.createFromResource(activity,
                 R.array.sort_movie_array, android.R.layout.simple_spinner_item);
@@ -82,9 +92,14 @@ public class MoviesListFragment extends Fragment implements
         movieGridRecycleView.setAdapter(moviesGridAdapter);
         moviesGridAdapter.setOnGridItemClickListener(this);
 
-        fetchMovieData(sortOrder, activity);
-
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState)
+    {
+        outState.putParcelableArrayList(MOVIE_DATA_KEY, moviesData);
+        super.onSaveInstanceState(outState);
     }
 
 
@@ -115,6 +130,7 @@ public class MoviesListFragment extends Fragment implements
                     .commit();
         }
     }
+
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
@@ -153,27 +169,8 @@ public class MoviesListFragment extends Fragment implements
 
     public void fetchMovieData(String sortBy, Context context)
     {
-        if(Util.isOnline(context))
-        {
-            new FetchMovieTask(this).execute(sortBy);
-        }
-        else
-        {
-            movieGridRecycleView.setVisibility(View.GONE);
-            Snackbar snackbar = Snackbar
-                    .make(snackbarPosition,
-                            getResources().getString(R.string.no_internet_connection),
-                            Snackbar.LENGTH_INDEFINITE)
-                    .setActionTextColor(Color.RED)
-                    .setAction("RETRY", new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            fetchMovieData(sortOrder, activity);
-                        }
-                    });
+        new FetchMovieTask(this).execute(sortBy);
 
-            snackbar.show();
-        }
     }
 
     @Override
@@ -193,6 +190,23 @@ public class MoviesListFragment extends Fragment implements
             moviesData.addAll(receivedMoviesList);
             moviesGridAdapter.notifyDataSetChanged();
             movieGridRecycleView.setVisibility(View.VISIBLE);
+        }
+        else if(receivedMoviesList == null)
+        {
+            movieGridRecycleView.setVisibility(View.GONE);
+            Snackbar snackbar = Snackbar
+                    .make(snackbarPosition,
+                            getResources().getString(R.string.no_internet_connection),
+                            Snackbar.LENGTH_INDEFINITE)
+                    .setActionTextColor(Color.RED)
+                    .setAction("RETRY", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            fetchMovieData(sortOrder, activity);
+                        }
+                    });
+
+            snackbar.show();
         }
 
     }
